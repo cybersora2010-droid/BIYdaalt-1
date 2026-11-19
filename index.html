@@ -41,6 +41,9 @@ input[type=number]{width:9rem}
 .formulas b{display:block}
 .formulas code{font-family:Georgia,serif;font-size:1.15rem}
 @media (prefers-reduced-motion:no-preference){.go:active,.keys button:active{transform:translateY(1px)}}
+.gbox{border:2px solid var(--line);border-radius:10px;padding:14px;background:var(--paper);margin-bottom:14px}.gbox:last-child{margin-bottom:0}.gbox h3{margin:0 0 6px}.gbox .q{margin:6px 0}
+.about{margin-top:18px;background:var(--card);border:2px solid var(--line);border-radius:14px;padding:14px 16px}.about h3{margin:0 0 8px;font-size:1rem}.about p{margin:2px 0}.about .grp{display:inline-block;margin-top:8px;padding:2px 10px;border-radius:999px;background:var(--mark);color:#14274e;font-weight:700}
+@media (min-width:1100px){.about{position:fixed;right:24px;top:130px;width:230px;margin:0}}
 </style>
 </head>
 <body>
@@ -52,6 +55,7 @@ input[type=number]{width:9rem}
 <button role="tab" aria-selected="true" data-t="practice">Бодлого</button>
 <button role="tab" aria-selected="false" data-t="calc">Тооцоолуур</button>
 <button role="tab" aria-selected="false" data-t="formulas">Томьёо</button>
+<button role="tab" aria-selected="false" data-t="games">Тоглоом</button>
 </nav>
 
 <section id="practice">
@@ -63,7 +67,15 @@ input[type=number]{width:9rem}
 <option value="-">Хасах</option>
 <option value="*">Үржих</option>
 <option value="/">Хуваах</option>
+<option value="sq">Квадрат (n²)</option>
+<option value="rt">Язгуур (√)</option>
 <option value="mix">Холимог</option>
+</select>
+<label for="level">Түвшин:</label>
+<select id="level">
+<option value="1">1 — Хөнгөн</option>
+<option value="2" selected>2 — Дунд</option>
+<option value="3">3 — Хэцүү</option>
 </select>
 </div>
 <div class="q" id="question">…</div>
@@ -96,6 +108,31 @@ input[type=number]{width:9rem}
 <div><b>Хувь олох</b><code>x = a · p / 100</code></div>
 </div>
 </section>
+<section id="games" hidden>
+<h2>Мини тоглоом</h2>
+<div class="gbox">
+<h3>⚡ Хурдан тооцоо</h3>
+<p class="score">30 секундэд аль болох олон бодлого бод.</p>
+<div class="row"><button class="go" id="sStart">Эхлэх</button><span id="sTime" class="score">Хугацаа: 30</span></div>
+<div class="q" id="sQ">—</div>
+<div class="row"><input type="number" id="sA" inputmode="numeric" aria-label="Хариу" disabled><button class="go" id="sOk" disabled>Шалгах</button></div>
+<p class="msg" id="sMsg" aria-live="polite"></p>
+<p class="score" id="sScore">Оноо: 0 · Рекорд: 0</p>
+</div>
+<div class="gbox">
+<h3>🎯 Тоо таах</h3>
+<p class="score">Би 1–100 хооронд тоо бодлоо. 7 оролдлогод тап!</p>
+<div class="row"><input type="number" id="gA" inputmode="numeric" aria-label="Таамаг"><button class="go" id="gOk">Таах</button><button class="go" id="gNew" style="background:var(--card);color:var(--ink)">Шинээр</button></div>
+<p class="msg" id="gMsg" aria-live="polite"></p>
+<p class="score" id="gTry">Оролдлого: 0 / 7</p>
+</div>
+</section>
+<aside class="about" aria-label="Бүтээгчид">
+<h3>👤 Бүтээгчид</h3>
+<p>Э.Баттулга</p>
+<p>Г.Тэмүжин</p>
+<span class="grp">ХП-2a</span>
+</aside>
 </main>
 
 <script>
@@ -103,7 +140,7 @@ input[type=number]{width:9rem}
 var tabs=document.querySelectorAll('nav button');
 function show(id){
   tabs.forEach(function(b){b.setAttribute('aria-selected',String(b.dataset.t===id))});
-  ['practice','calc','formulas'].forEach(function(s){document.getElementById(s).hidden=(s!==id)});
+  ['practice','calc','formulas','games'].forEach(function(s){document.getElementById(s).hidden=(s!==id)});
 }
 tabs.forEach(function(b){b.addEventListener('click',function(){show(b.dataset.t)})});
 
@@ -113,15 +150,27 @@ var $=function(i){return document.getElementById(i)};
 function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a}
 function make(){
   var k=$('kind').value;
-  if(k==='mix'){k=['+','-','*','/'][rnd(0,3)]}
-  var a,b,ans;
-  if(k==='+'){a=rnd(10,99);b=rnd(10,99);ans=a+b}
-  else if(k==='-'){a=rnd(30,99);b=rnd(10,a);ans=a-b}
-  else if(k==='*'){a=rnd(2,12);b=rnd(2,12);ans=a*b}
-  else{b=rnd(2,12);ans=rnd(2,12);a=b*ans}
+  if(k==='mix'){k=['+','-','*','/','sq','rt'][rnd(0,5)]}
+  var L=Number($('level').value),a,b,ans;
+  if(k==='+'){
+    if(L===1){a=rnd(1,20);b=rnd(1,20)}else if(L===2){a=rnd(10,99);b=rnd(10,99)}else{a=rnd(100,999);b=rnd(100,999)}
+    ans=a+b}
+  else if(k==='-'){
+    if(L===1){a=rnd(5,20);b=rnd(1,a)}else if(L===2){a=rnd(30,99);b=rnd(10,a)}else{a=rnd(300,999);b=rnd(100,a)}
+    ans=a-b}
+  else if(k==='*'){
+    if(L===1){a=rnd(2,5);b=rnd(2,9)}else if(L===2){a=rnd(2,12);b=rnd(2,12)}else{a=rnd(12,25);b=rnd(6,19)}
+    ans=a*b}
+  else if(k==='/'){
+    if(L===1){b=rnd(2,5);ans=rnd(2,9)}else if(L===2){b=rnd(2,12);ans=rnd(2,12)}else{b=rnd(6,19);ans=rnd(11,30)}
+    a=b*ans}
+  else if(k==='sq'){
+    a=L===1?rnd(2,10):L===2?rnd(11,20):rnd(21,35);ans=a*a}
+  else{
+    ans=L===1?rnd(2,10):L===2?rnd(11,20):rnd(21,35);a=ans*ans}
   var sym={'+':'+','-':'−','*':'×','/':'÷'}[k];
   cur={ans:ans};
-  $('question').textContent=a+' '+sym+' '+b+' = ?';
+  $('question').textContent=k==='sq'?a+'² = ?':k==='rt'?'√'+a+' = ?':a+' '+sym+' '+b+' = ?';
   $('answer').value='';$('answer').focus();
 }
 function check(){
@@ -137,6 +186,7 @@ $('check').addEventListener('click',check);
 $('skip').addEventListener('click',function(){$('msg').textContent='';make()});
 $('answer').addEventListener('keydown',function(e){if(e.key==='Enter')check()});
 $('kind').addEventListener('change',function(){$('msg').textContent='';make()});
+$('level').addEventListener('change',function(){$('msg').textContent='';make()});
 make();
 
 // Calculator
@@ -144,28 +194,81 @@ var expr=$('expr'),out=$('out');
 function calc(){
   var s=expr.value.replace(/×/g,'*').replace(/÷/g,'/').replace(/,/g,'.');
   if(!s.trim()){out.textContent='0';return}
-  if(!/^[0-9+\-*\/().%\s]+$/.test(s)){out.textContent='Зөвхөн тоо, + − × ÷ ( ) ашиглана';return}
+  if(!/^[0-9+\-*\/().%^√\s]+$/.test(s)){out.textContent='Зөвхөн тоо, + − × ÷ ^ √ ( ) ашиглана';return}
   try{
-    var r=Function('"use strict";return ('+s+')')();
+    s=s.replace(/√\s*(\d+(?:\.\d+)?)/g,'Math.sqrt($1)').replace(/√/g,'Math.sqrt').replace(/\^/g,'**');var r=Function('"use strict";return ('+s+')')();
     out.textContent=(isFinite(r)?String(Math.round(r*1e10)/1e10):'Тооцоолох боломжгүй');
   }catch(e){out.textContent='Илэрхийлэл буруу байна'}
 }
 expr.addEventListener('input',calc);
-var layout=['7','8','9','÷','4','5','6','×','1','2','3','−','0','.','C','+','(',')','⌫','='];
+var layout=['√','x²','^','%','7','8','9','÷','4','5','6','×','1','2','3','−','0','.','C','+','(',')','⌫','='];
 layout.forEach(function(k){
   var b=document.createElement('button');
   b.type='button';b.textContent=k;
-  if('÷×−+='.indexOf(k)>-1)b.className='op';
+  if('÷×−+='.indexOf(k)>-1||['√','x²','^','%'].indexOf(k)>-1)b.className='op';
   b.addEventListener('click',function(){
     if(k==='C'){expr.value=''}
     else if(k==='⌫'){expr.value=expr.value.slice(0,-1)}
     else if(k==='='){calc();return}
+    else if(k==='x²'){expr.value+='^2'}
     else{expr.value+=(k==='−'?'-':k)}
     calc();
   });
   $('keys').appendChild(b);
 });
+
+// Games
+var sTimer=null,sLeft=0,sScore=0,sBest=0,sAns=0;
+function sNext(){
+  var k=rnd(0,2),a,b;
+  if(k===0){a=rnd(10,60);b=rnd(10,60);sAns=a+b;$('sQ').textContent=a+' + '+b+' = ?'}
+  else if(k===1){a=rnd(20,90);b=rnd(5,a);sAns=a-b;$('sQ').textContent=a+' − '+b+' = ?'}
+  else{a=rnd(2,12);b=rnd(2,12);sAns=a*b;$('sQ').textContent=a+' × '+b+' = ?'}
+  $('sA').value='';$('sA').focus();
+}
+function sEnd(){
+  clearInterval(sTimer);sTimer=null;
+  $('sA').disabled=true;$('sOk').disabled=true;$('sStart').disabled=false;
+  if(sScore>sBest)sBest=sScore;
+  $('sQ').textContent='Дууслаа!';
+  $('sMsg').textContent='Таны оноо: '+sScore;$('sMsg').className='msg ok';
+  $('sScore').textContent='Оноо: '+sScore+' · Рекорд: '+sBest;
+}
+$('sStart').addEventListener('click',function(){
+  sScore=0;sLeft=30;
+  $('sTime').textContent='Хугацаа: 30';$('sMsg').textContent='';
+  $('sScore').textContent='Оноо: 0 · Рекорд: '+sBest;
+  $('sA').disabled=false;$('sOk').disabled=false;$('sStart').disabled=true;
+  sNext();
+  sTimer=setInterval(function(){sLeft--;$('sTime').textContent='Хугацаа: '+sLeft;if(sLeft<=0)sEnd()},1000);
+});
+function sCheck(){
+  if(!sTimer||$('sA').value==='')return;
+  if(Number($('sA').value)===sAns){sScore++;$('sMsg').textContent='Зөв!';$('sMsg').className='msg ok'}
+  else{$('sMsg').textContent='Буруу';$('sMsg').className='msg bad'}
+  $('sScore').textContent='Оноо: '+sScore+' · Рекорд: '+sBest;
+  sNext();
+}
+$('sOk').addEventListener('click',sCheck);
+$('sA').addEventListener('keydown',function(e){if(e.key==='Enter')sCheck()});
+
+var gNum=0,gTries=0,gOver=false;
+function gReset(){gNum=rnd(1,100);gTries=0;gOver=false;$('gMsg').textContent='';$('gTry').textContent='Оролдлого: 0 / 7';$('gA').value=''}
+function gCheck(){
+  if(gOver||$('gA').value==='')return;
+  var v=Number($('gA').value);gTries++;
+  if(v===gNum){gOver=true;$('gMsg').textContent='Зөв! '+gTries+' оролдлогод таалаа 🎉';$('gMsg').className='msg ok'}
+  else if(gTries>=7){gOver=true;$('gMsg').textContent='Дууслаа. Бодсон тоо: '+gNum;$('gMsg').className='msg bad'}
+  else{$('gMsg').textContent=(v<gNum?'Илүү их тоо бодсон':'Илүү бага тоо бодсон');$('gMsg').className='msg bad'}
+  $('gTry').textContent='Оролдлого: '+gTries+' / 7';
+  $('gA').value='';$('gA').focus();
+}
+$('gOk').addEventListener('click',gCheck);
+$('gNew').addEventListener('click',gReset);
+$('gA').addEventListener('keydown',function(e){if(e.key==='Enter')gCheck()});
+gReset();
 })();
 </script>
 </body>
 </html>
+
